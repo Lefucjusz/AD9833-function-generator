@@ -1,0 +1,54 @@
+/*
+ * hd44780_io.c
+ *
+ *  Created on: Feb 15, 2023
+ *      Author: lefucjusz
+ */
+
+#include "hd44780_io.h"
+#include "gpio.h"
+#include <math.h>
+
+#define HD44780_GPIO_PORT GPIOB
+
+typedef struct
+{
+	uint16_t gpio_pin;
+	HD44780_pin_t display_pin;
+} HD44780_gpio_map_t;
+
+static const HD44780_gpio_map_t gpio_map[HD44780_PIN_NUM] =
+{
+		{.gpio_pin = LCD_D4_Pin, .display_pin = HD44780_PIN_D4},
+		{.gpio_pin = LCD_D5_Pin, .display_pin = HD44780_PIN_D5},
+		{.gpio_pin = LCD_D6_Pin, .display_pin = HD44780_PIN_D6},
+		{.gpio_pin = LCD_D7_Pin, .display_pin = HD44780_PIN_D7},
+		{.gpio_pin = LCD_RS_Pin, .display_pin = HD44780_PIN_RS},
+		{.gpio_pin = LCD_E_Pin, .display_pin = HD44780_PIN_E}
+};
+
+static void set_pin_state(HD44780_pin_t pin, HD44780_pin_state_t state)
+{
+	for (size_t i = 0; i < HD44780_PIN_NUM; ++i) {
+		if (gpio_map[i].display_pin == pin) {
+			HAL_GPIO_WritePin(HD44780_GPIO_PORT, gpio_map[i].gpio_pin, state);
+			break;
+		}
+	}
+}
+
+static void delay_us(uint16_t us)
+{
+	const uint32_t ms = ceilf(us / 1000.0f);
+	HAL_Delay(ms);
+}
+
+HD44780_io_t *HD44780_io_get(void)
+{
+	static HD44780_io_t io = {
+			.set_pin_state = set_pin_state,
+			.delay_us = delay_us
+	};
+
+	return &io;
+}

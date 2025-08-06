@@ -25,6 +25,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <dds.h>
+#include <hd44780.h>
+#include <hd44780_io.h>
 #include <math.h>
 /* USER CODE END Includes */
 
@@ -114,7 +116,18 @@ int main(void)
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
+  const HD44780_config_t lcd_config = {
+		  .io = HD44780_io_get(),
+		  .type = HD44780_DISPLAY_16x2,
+		  .entry_mode_flags = HD44780_INCREASE_CURSOR_ON,
+		  .on_off_flags = HD44780_DISPLAY_ON
+  };
+
+  HD44780_init(&lcd_config);
+
   HAL_TIM_Encoder_Start_IT(&htim3, TIM_CHANNEL_ALL);
+
+  uint32_t last_counter = ~0;
 
   /* USER CODE END 2 */
 
@@ -122,7 +135,13 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  if (counter != last_counter) {
+		  HD44780_gotoxy(1, 1);
 
+		  HD44780_write_integer(counter, 5);
+
+		  last_counter = counter;
+	  }
 
     /* USER CODE END WHILE */
 
