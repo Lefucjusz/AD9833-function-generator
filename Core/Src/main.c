@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "spi.h"
+#include "tim.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -57,6 +58,27 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+static volatile uint32_t counter = 0;
+static volatile uint32_t press_counter = 0;
+
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+{
+	counter = __HAL_TIM_GET_COUNTER(htim);
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	static uint32_t last_tick;
+	const uint32_t current_tick = HAL_GetTick();
+
+	if ((current_tick - last_tick) < 100) {
+		return;
+	}
+
+	if (GPIO_Pin == ENC_BUTTON_Pin) {
+		++press_counter;
+	}
+}
 /* USER CODE END 0 */
 
 /**
@@ -89,11 +111,10 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_SPI1_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
-  dds_init();
-
-  size_t halfsteps = 0;
+  HAL_TIM_Encoder_Start_IT(&htim3, TIM_CHANNEL_ALL);
 
   /* USER CODE END 2 */
 
@@ -101,36 +122,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  /* Play 'The Licc', modulating half step up every repetition :D */
-	  const float scale_factor = powf(2.0f, halfsteps / 12.0f);
-	  const dds_mode_t mode = (halfsteps % 2 == 0) ? DDS_MODE_TRIANGLE : DDS_MODE_SINE;
 
-	  dds_set_mode(mode);
-	  dds_set_frequency(220.0f * scale_factor, DDS_CH0);
-	  HAL_Delay(300);
-
-	  dds_set_frequency(246.9f * scale_factor, DDS_CH0);
-	  HAL_Delay(200);
-
-	  dds_set_frequency(261.6f * scale_factor, DDS_CH0);
-	  HAL_Delay(300);
-
-	  dds_set_frequency(293.7f * scale_factor, DDS_CH0);
-	  HAL_Delay(200);
-
-	  dds_set_frequency(246.9f * scale_factor, DDS_CH0);
-	  HAL_Delay(500);
-
-	  dds_set_frequency(196.0f * scale_factor, DDS_CH0);
-	  HAL_Delay(300);
-
-	  dds_set_frequency(220.0f * scale_factor, DDS_CH0);
-	  HAL_Delay(200);
-
-	  dds_set_mode(DDS_MODE_DISABLED);
-	  HAL_Delay(500);
-
-	  ++halfsteps;
 
     /* USER CODE END WHILE */
 

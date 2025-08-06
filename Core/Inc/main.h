@@ -61,6 +61,13 @@ void Error_Handler(void);
 #define DDS_CS_GPIO_Port GPIOA
 #define PGA_CS_Pin GPIO_PIN_4
 #define PGA_CS_GPIO_Port GPIOA
+#define ENC_PHA_Pin GPIO_PIN_4
+#define ENC_PHA_GPIO_Port GPIOB
+#define ENC_PHB_Pin GPIO_PIN_5
+#define ENC_PHB_GPIO_Port GPIOB
+#define ENC_BUTTON_Pin GPIO_PIN_6
+#define ENC_BUTTON_GPIO_Port GPIOB
+#define ENC_BUTTON_EXTI_IRQn EXTI9_5_IRQn
 
 /* USER CODE BEGIN Private defines */
 

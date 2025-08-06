@@ -1,8 +1,9 @@
 #include "dds.h"
 #include "gpio.h"
 #include "spi.h"
-#include <math.h>
+#include <utils.h>
 #include <string.h>
+#include <math.h>
 
 #define DDS_SPI_TIMEOUT_MS 250
 
@@ -24,11 +25,6 @@
 #define FREQ0_REG_MASK		(1 << 14)
 #define FREQ1_REG_MASK 		(2 << 14)
 #define FREQ_REG_VALUE_MASK (~(FREQ0_REG_MASK | FREQ1_REG_MASK))
-
-// TODO move these to utils
-#define MIN(x, y) (((x) < (y)) ? (x) : (y))
-#define MAX(x, y) (((x) > (y)) ? (x) : (y))
-#define CLAMP(x, lo, hi) MIN(hi, MAX(lo, x))
 
 typedef struct
 {
@@ -64,17 +60,21 @@ static HAL_StatusTypeDef dds_spi_write(uint16_t data)
 	return status;
 }
 
-static HAL_StatusTypeDef dds_write_frequency(uint32_t frequency, uint8_t channel)
+static HAL_StatusTypeDef dds_write_frequency(uint32_t frequency, dds_channel_t channel)
 {
 	uint16_t hi_word;
 	uint16_t lo_word;
 
 	/* Select register to write */
-	if (channel == 0) {
-		hi_word = lo_word = FREQ0_REG_MASK;
-	}
-	else {
-		hi_word = lo_word = FREQ1_REG_MASK;
+	switch (channel) {
+		case DDS_CH0:
+			hi_word = lo_word = FREQ0_REG_MASK;
+			break;
+		case DDS_CH1:
+			hi_word = lo_word = FREQ1_REG_MASK;
+			break;
+		default:
+			return HAL_ERROR;
 	}
 
 	/* Set value of each word */
