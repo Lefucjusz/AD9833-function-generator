@@ -93,6 +93,18 @@ int main(void)
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
+  /* TODO:
+   * - implement missing phase control function in dds.c
+   * - implement PGA control in dds.c
+   * - GUI:
+   * - frequency control
+   * - amplitude control
+   * - waveform control
+   * - output on/off + indication
+   *
+   * - store settings in EEPROM/NVRAM
+   */
+
   gui_init();
 
   /* USER CODE END 2 */

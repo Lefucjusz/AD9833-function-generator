@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define ENCODER_BUTTON_DEBOUNCE_TIME_MS 150
+#define ENCODER_BUTTON_DEBOUNCE_TIME_MS 200
 
 typedef struct
 {
@@ -62,7 +62,6 @@ void encoder_task(void)
 			ctx.button_pressed = false;
 		}
 	}
-
 }
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
