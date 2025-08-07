@@ -14,10 +14,10 @@
 typedef struct
 {
 	uint16_t gpio_pin;
-	HD44780_pin_t display_pin;
-} HD44780_gpio_map_t;
+	hd44780_pin_t display_pin;
+} hd44780_gpio_map_t;
 
-static const HD44780_gpio_map_t gpio_map[HD44780_PIN_NUM] =
+static const hd44780_gpio_map_t gpio_map[HD44780_PIN_NUM] =
 {
 		{.gpio_pin = LCD_D4_Pin, .display_pin = HD44780_PIN_D4},
 		{.gpio_pin = LCD_D5_Pin, .display_pin = HD44780_PIN_D5},
@@ -27,7 +27,7 @@ static const HD44780_gpio_map_t gpio_map[HD44780_PIN_NUM] =
 		{.gpio_pin = LCD_E_Pin, .display_pin = HD44780_PIN_E}
 };
 
-static void set_pin_state(HD44780_pin_t pin, HD44780_pin_state_t state)
+static void set_pin_state(hd44780_pin_t pin, hd44780_pin_state_t state)
 {
 	for (size_t i = 0; i < HD44780_PIN_NUM; ++i) {
 		if (gpio_map[i].display_pin == pin) {
@@ -43,9 +43,9 @@ static void delay_us(uint16_t us)
 	HAL_Delay(ms);
 }
 
-HD44780_io_t *HD44780_io_get(void)
+hd44780_io_t *hd44780_io_get(void)
 {
-	static HD44780_io_t io = {
+	static hd44780_io_t io = {
 			.set_pin_state = set_pin_state,
 			.delay_us = delay_us
 	};

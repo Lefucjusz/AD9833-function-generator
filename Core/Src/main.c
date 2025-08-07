@@ -25,9 +25,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <dds.h>
-#include <hd44780.h>
-#include <hd44780_io.h>
-#include <math.h>
+#include <gui.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -60,27 +58,6 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-static volatile uint32_t counter = 0;
-static volatile uint32_t press_counter = 0;
-
-void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
-{
-	counter = __HAL_TIM_GET_COUNTER(htim);
-}
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-	static uint32_t last_tick;
-	const uint32_t current_tick = HAL_GetTick();
-
-	if ((current_tick - last_tick) < 100) {
-		return;
-	}
-
-	if (GPIO_Pin == ENC_BUTTON_Pin) {
-		++press_counter;
-	}
-}
 /* USER CODE END 0 */
 
 /**
@@ -116,18 +93,7 @@ int main(void)
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
-  const HD44780_config_t lcd_config = {
-		  .io = HD44780_io_get(),
-		  .type = HD44780_DISPLAY_16x2,
-		  .entry_mode_flags = HD44780_INCREASE_CURSOR_ON,
-		  .on_off_flags = HD44780_DISPLAY_ON
-  };
-
-  HD44780_init(&lcd_config);
-
-  HAL_TIM_Encoder_Start_IT(&htim3, TIM_CHANNEL_ALL);
-
-  uint32_t last_counter = ~0;
+  gui_init();
 
   /* USER CODE END 2 */
 
@@ -135,14 +101,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if (counter != last_counter) {
-		  HD44780_gotoxy(1, 1);
-
-		  HD44780_write_integer(counter, 5);
-
-		  last_counter = counter;
-	  }
-
+	  gui_task();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

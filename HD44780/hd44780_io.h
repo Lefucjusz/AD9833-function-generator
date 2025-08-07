@@ -10,6 +10,6 @@
 
 #include "hd44780.h"
 
-HD44780_io_t *HD44780_io_get(void);
+hd44780_io_t *hd44780_io_get(void);
 
 #endif /* HD44780_IO_WRAPPER_H_ */
