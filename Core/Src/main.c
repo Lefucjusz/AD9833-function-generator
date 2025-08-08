@@ -28,6 +28,7 @@
 #include <hd44780_io.h>
 #include <encoder.h>
 #include <dds.h>
+#include <settings.h>
 #include <gui.h>
 /* USER CODE END Includes */
 
@@ -114,9 +115,19 @@ int main(void)
 		  .entry_mode_flags = HD44780_INCREASE_CURSOR_ON
   };
   hd44780_init(&lcd_config);
-  encoder_init();
+  encoder_init(); // TODO check return codes
   dds_init();
-  gui_init();
+  settings_init();
+
+  volatile uint16_t status;
+//  uint32_t data = 0xDEADBEEF;
+
+//  status = settings_write(data, 0);
+
+  uint32_t result;
+  status = settings_read(&result, 0);
+
+//  gui_init();
 
   /* USER CODE END 2 */
 
@@ -124,7 +135,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  gui_task();
+//	  gui_task();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
