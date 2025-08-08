@@ -48,14 +48,18 @@ static void gui_load_custom_chars(void)
 	hd44780_clear();
 }
 
-static void gui_on_click(void)
+static void gui_on_click(encoder_button_action_t type)
 {
-	ctx.digit++;
-	if (ctx.digit > 6) {
-		ctx.digit = 0;
-		ctx.setting = false;
-	}
-	ctx.frequency_changed = true;
+//	ctx.digit++;
+//	if (ctx.digit > 6) {
+//		ctx.digit = 0;
+//		ctx.setting = false;
+//	}
+//	ctx.frequency_changed = true;
+
+
+	hd44780_gotoxy(1, 1);
+	hd44780_write_string(type == ENCODER_BUTTON_CLICK ? "click" : "hold ");
 }
 
 /*
@@ -66,15 +70,15 @@ static void gui_on_click(void)
 
 static void gui_on_rotate(encoder_direction_t direction, uint16_t count, int16_t increment)
 {
-	uint32_t multiplier = powf(10.0f, ctx.digit); // TODO do it as *= 10
-	uint32_t sum = ctx.frequency + increment * multiplier;
-	if (sum < 0 || sum > 9999999) {
-		return;
-	}
-
-	ctx.frequency = sum;
-
-	ctx.frequency_changed = true;
+//	uint32_t multiplier = powf(10.0f, ctx.digit); // TODO do it as *= 10
+//	uint32_t sum = ctx.frequency + increment * multiplier;
+//	if (sum < 0 || sum > 9999999) {
+//		return;
+//	}
+//
+//	ctx.frequency = sum;
+//
+//	ctx.frequency_changed = true;
 }
 
 static void gui_display_frequency(uint32_t frequency, bool leading_zeros)
@@ -112,7 +116,7 @@ void gui_init(void)
 	encoder_set_button_callback(gui_on_click);
 	encoder_set_rotation_callback(gui_on_rotate);
 
-	ctx.frequency_changed = true;
+	ctx.frequency_changed = false;
 	ctx.setting = true;
 }
 
