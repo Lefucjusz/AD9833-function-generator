@@ -137,11 +137,11 @@ HAL_StatusTypeDef dds_set_mode(dds_mode_t mode)
 		case DDS_MODE_TRIANGLE:
 			ctx.ctrl_reg |= MODE_CTRL_BIT;
 			break;
-		case DDS_MODE_HALF_SQUARE:
-			ctx.ctrl_reg |= OPBITEN_CTRL_BIT;
-			break;
 		case DDS_MODE_SQUARE:
 			ctx.ctrl_reg |= (OPBITEN_CTRL_BIT | DIV2_CTRL_BIT);
+			break;
+		case DDS_MODE_HALF_SQUARE:
+			ctx.ctrl_reg |= OPBITEN_CTRL_BIT;
 			break;
 		default:
 			break;

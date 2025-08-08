@@ -1,14 +1,14 @@
 #include "gui.h"
 #include <hd44780.h>
-#include <hd44780_io.h>
 #include <encoder.h>
+#include <dds.h>
 #include <stm32f1xx_hal.h>
 #include <math.h>
+#include <string.h>
 
 /*
  * TODO:
- * - finish basic control
- * - add moving to next parameter on long press
+ * - integrate with DDS API
  * - add timeout with returning to original value on inactivity
  */
 
@@ -33,6 +33,10 @@
 #define GUI_DISP_FREQ_END_Y 14
 #define GUI_DISP_AMPL_X 2
 #define GUI_DISP_AMPL_END_Y 9
+#define GUI_DISP_WAVEFORM_X 2
+#define GUI_DISP_WAVEFORM_Y 13
+#define GUI_DISP_OUTPUT_X 2
+#define GUI_DISP_OUTPUT_Y 16
 
 typedef enum
 {
@@ -42,7 +46,8 @@ typedef enum
 	GUI_TRIANGLE_WAVE_CHAR_2,
 	GUI_SQUARE_WAVE_CHAR_1,
 	GUI_SQUARE_WAVE_CHAR_2,
-	GUI_LARGE_DOT_CHAR,
+	GUI_OUTPUT_OFF_CHAR,
+	GUI_OUTPUT_ON_CHAR,
 	GUI_WAVEFORM_CHARS_COUNT
 } gui_custom_chars_t;
 
@@ -62,11 +67,12 @@ typedef enum
 
 typedef struct
 {
-	hd44780_config_t lcd_config;
 	uint32_t frequency;
 	uint32_t amplitude;	// Stored in volts * 100 to simplify math
 	gui_state_t state;
 	uint8_t selected_digit; // 0 - least significant
+	dds_mode_t waveform;
+	bool output_enabled;
 } gui_ctx_t;
 
 static gui_ctx_t ctx;
@@ -79,6 +85,7 @@ static const uint8_t waveform_chars[GUI_WAVEFORM_CHARS_COUNT][HD44780_CGRAM_CHAR
 		{0x00, 0x00, 0x00, 0x00, 0x11, 0x0A, 0x04, 0x00},
 		{0x0E, 0x0A, 0x0A, 0x1B, 0x00, 0x00, 0x00, 0x00},
 		{0x00, 0x00, 0x00, 0x1B, 0x0A, 0x0A, 0x0E, 0x00},
+		{0x00, 0x0E, 0x11, 0x11, 0x11, 0x0E, 0x00, 0x00},
 		{0x00, 0x0E, 0x1F, 0x1F, 0x1F, 0x0E, 0x00, 0x00}
 };
 
@@ -131,6 +138,35 @@ static void gui_display_amplitude(uint16_t amplitude)
 	}
 }
 
+static void gui_display_waveform(dds_mode_t waveform)
+{
+	hd44780_gotoxy(GUI_DISP_WAVEFORM_X, GUI_DISP_WAVEFORM_Y);
+
+	switch (waveform) {
+		case DDS_MODE_SINE:
+			hd44780_write_char(GUI_SINE_WAVE_CHAR_1);
+			hd44780_write_char(GUI_SINE_WAVE_CHAR_2);
+			break;
+		case DDS_MODE_TRIANGLE:
+			hd44780_write_char(GUI_TRIANGLE_WAVE_CHAR_1);
+			hd44780_write_char(GUI_TRIANGLE_WAVE_CHAR_2);
+			break;
+		case DDS_MODE_HALF_SQUARE:
+		case DDS_MODE_SQUARE:
+			hd44780_write_char(GUI_SQUARE_WAVE_CHAR_1);
+			hd44780_write_char(GUI_SQUARE_WAVE_CHAR_2);
+			break;
+		default:
+			break;
+	}
+}
+
+static void gui_display_output_state(bool enabled)
+{
+	hd44780_gotoxy(GUI_DISP_OUTPUT_X, GUI_DISP_OUTPUT_Y);
+	hd44780_write_char(enabled ? GUI_OUTPUT_ON_CHAR : GUI_OUTPUT_OFF_CHAR);
+}
+
 static bool gui_increment_value(uint32_t *value, int16_t increment, uint8_t selected_digit, uint32_t limit_lo, uint32_t limit_hi)
 {
 	const uint32_t multiplier = powf(10.0f, selected_digit);
@@ -166,6 +202,8 @@ static void gui_redraw_display(uint8_t cursor_x, uint8_t cursor_y, gui_redraw_mo
 	hd44780_write_string("Ampl:");
 	gui_display_amplitude(ctx.amplitude);
 	hd44780_write_string("Vp");
+	gui_display_waveform(ctx.waveform);
+	gui_display_output_state(ctx.output_enabled);
 
 	/* No need to explicitly position the cursor if it's not visible */
 	if (set_mode_active) {
@@ -195,16 +233,26 @@ static uint8_t gui_amplitude_digit_to_column(uint8_t digit_index)
 	return GUI_DISP_AMPL_END_Y - digit_index;
 }
 
+static void gui_dds_load_from_eeprom(void)
+{
+
+}
+
 static void gui_button_callback(encoder_button_action_t type)
 {
 	switch (ctx.state) {
 		case GUI_SET_MODE_OFF:
-			if (type == ENCODER_BUTTON_HOLD) {
+			if (type == ENCODER_BUTTON_CLICK) {
+				ctx.output_enabled = !ctx.output_enabled;
+				gui_redraw_display(0, 0, GUI_REDRAW_PARTIAL);
+			}
+			else {
 				ctx.selected_digit = 0;
 				ctx.state = GUI_SET_FREQUENCY;
 				gui_redraw_display(GUI_DISP_FREQ_X, gui_frequency_digit_to_column(ctx.selected_digit), GUI_REDRAW_PARTIAL);
 			}
 			break;
+
 		case GUI_SET_FREQUENCY:
 			if (type == ENCODER_BUTTON_CLICK) {
 				++ctx.selected_digit;
@@ -217,7 +265,13 @@ static void gui_button_callback(encoder_button_action_t type)
 					gui_redraw_display(GUI_DISP_AMPL_X, gui_amplitude_digit_to_column(ctx.selected_digit), GUI_REDRAW_PARTIAL);
 				}
 			}
+			else {
+				ctx.selected_digit = 0;
+				ctx.state = GUI_SET_AMPLITUDE;
+				gui_redraw_display(GUI_DISP_AMPL_X, gui_amplitude_digit_to_column(ctx.selected_digit), GUI_REDRAW_PARTIAL);
+			}
 			break;
+
 		case GUI_SET_AMPLITUDE:
 			if (type == ENCODER_BUTTON_CLICK) {
 				++ctx.selected_digit;
@@ -225,15 +279,23 @@ static void gui_button_callback(encoder_button_action_t type)
 					gui_redraw_display(GUI_DISP_AMPL_X, gui_amplitude_digit_to_column(ctx.selected_digit), GUI_REDRAW_PARTIAL);
 				}
 				else {
-					ctx.selected_digit = 0;
 					ctx.state = GUI_SET_WAVEFORM;
-//					gui_redraw_display(GUI_DISP_AMPL_X, gui_amplitude_digit_to_column(ctx.selected_digit), GUI_REDRAW_PARTIAL);
+					gui_redraw_display(GUI_DISP_WAVEFORM_X, GUI_DISP_WAVEFORM_Y, GUI_REDRAW_PARTIAL);
 				}
 			}
+			else {
+				ctx.state = GUI_SET_WAVEFORM;
+				gui_redraw_display(GUI_DISP_WAVEFORM_X, GUI_DISP_WAVEFORM_Y, GUI_REDRAW_PARTIAL);
+			}
 			break;
+
 		case GUI_SET_WAVEFORM:
+			ctx.state = GUI_SET_MODE_OFF;
+			// TODO update config in EEPROM
 			// TODO
+			gui_redraw_display(0, 0, GUI_REDRAW_FULL);
 			break;
+
 		default:
 			break;
 	}
@@ -245,19 +307,30 @@ static void gui_rotation_callback(encoder_direction_t direction, uint16_t count,
 		case GUI_SET_MODE_OFF:
 			// Do nothing
 			break;
+
 		case GUI_SET_FREQUENCY:
 			if (gui_increment_value(&ctx.frequency, increment, ctx.selected_digit, GUI_FREQ_MIN_VALUE, GUI_FREQ_MAX_VALUE)) {
 				gui_redraw_display(GUI_DISP_FREQ_X, gui_frequency_digit_to_column(ctx.selected_digit), GUI_REDRAW_PARTIAL);
 			}
 			break;
+
 		case GUI_SET_AMPLITUDE:
 			if (gui_increment_value(&ctx.amplitude, increment, ctx.selected_digit, GUI_AMPL_MIN_VALUE, GUI_AMPL_MAX_VALUE)) {
 				gui_redraw_display(GUI_DISP_AMPL_X, gui_amplitude_digit_to_column(ctx.selected_digit), GUI_REDRAW_PARTIAL);
 			}
 			break;
+
 		case GUI_SET_WAVEFORM:
-			// TODO
+			ctx.waveform += increment;
+			if (ctx.waveform > DDS_MODE_SQUARE) {
+				ctx.waveform = DDS_MODE_SINE;
+			}
+			else if (ctx.waveform < DDS_MODE_SINE) {
+				ctx.waveform = DDS_MODE_SQUARE;
+			}
+			gui_redraw_display(GUI_DISP_WAVEFORM_X, GUI_DISP_WAVEFORM_Y, GUI_REDRAW_PARTIAL);
 			break;
+
 		default:
 			break;
 	}
@@ -265,16 +338,14 @@ static void gui_rotation_callback(encoder_direction_t direction, uint16_t count,
 
 void gui_init(void)
 {
-	ctx.lcd_config.io = hd44780_io_get();
-	ctx.lcd_config.type = HD44780_DISPLAY_16x2;
-	ctx.lcd_config.entry_mode_flags = HD44780_INCREASE_CURSOR_ON;
+	memset(&ctx, 0, sizeof(ctx));
 
-	hd44780_init(&ctx.lcd_config);
 	gui_load_custom_chars();
 
-	encoder_init();
 	encoder_set_button_callback(gui_button_callback);
 	encoder_set_rotation_callback(gui_rotation_callback);
+
+	ctx.waveform = DDS_MODE_SINE;
 
 	gui_redraw_display(0, 0, GUI_REDRAW_FULL);
 }
