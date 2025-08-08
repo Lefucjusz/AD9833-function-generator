@@ -4,6 +4,8 @@
 #include <string.h>
 #include <stdbool.h>
 
+#define ENCODER_TIMER_HANDLE &htim3
+
 #define ENCODER_BUTTON_DEBOUNCE_TIME_MS 100
 #define ENCODER_BUTTON_HOLD_TIME_MS 750
 
@@ -28,13 +30,32 @@ typedef struct
 
 typedef struct
 {
-	encoder_rotation_callback_t rotation_callback;
-	volatile uint16_t count;
+	volatile bool rotated;
 	uint16_t last_count;
+	encoder_rotation_callback_t rotation_callback;
 	encoder_button_t encoder_button;
 } encoder_ctx_t;
 
 static encoder_ctx_t ctx;
+
+static void encoder_rotation_update(void)
+{
+	if (ctx.rotation_callback == NULL) {
+		return;
+	}
+
+	if (ctx.rotated) {
+		ctx.rotated = false;
+
+		const uint16_t count = __HAL_TIM_GET_COUNTER(ENCODER_TIMER_HANDLE);
+		const int16_t increment = count - ctx.last_count;
+		const encoder_direction_t direction = (increment > 0) ? ENCODER_CW : ENCODER_CCW;
+
+		ctx.rotation_callback(direction, count, increment);
+
+		ctx.last_count = count;
+	}
+}
 
 static void encoder_button_update(encoder_button_t *button)
 {
@@ -95,7 +116,7 @@ HAL_StatusTypeDef encoder_init(void)
 	ctx.encoder_button.gpio = ENC_BUTTON_GPIO_Port;
 	ctx.encoder_button.pin = ENC_BUTTON_Pin;
 
-	return HAL_TIM_Encoder_Start_IT(&htim3, TIM_CHANNEL_ALL);
+	return HAL_TIM_Encoder_Start_IT(ENCODER_TIMER_HANDLE, TIM_CHANNEL_ALL);
 }
 
 void encoder_set_rotation_callback(encoder_rotation_callback_t callback)
@@ -110,23 +131,11 @@ void encoder_set_button_callback(encoder_button_callback_t callback)
 
 void encoder_task(void)
 {
-	/* Handle encoder rotation */
-	if (ctx.rotation_callback != NULL) {
-		if (ctx.count != ctx.last_count) {
-			const int16_t increment = ctx.count - ctx.last_count;
-			const encoder_direction_t direction = (increment > 0) ? ENCODER_CW : ENCODER_CCW;
-
-			ctx.rotation_callback(direction, ctx.count, increment);
-
-			ctx.last_count = ctx.count;
-		}
-	}
-
-	/* Handle encoder button */
+	encoder_rotation_update();
 	encoder_button_update(&ctx.encoder_button);
 }
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
-	ctx.count = __HAL_TIM_GET_COUNTER(htim);
+	ctx.rotated = true;
 }
