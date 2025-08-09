@@ -2,14 +2,12 @@
 #include <hd44780.h>
 #include <encoder.h>
 #include <dds.h>
-#include <stm32f1xx_hal.h>
+#include <settings.h>
 #include <math.h>
-#include <string.h>
 
 /*
  * TODO:
  * - integrate with DDS API
- * - add timeout with returning to original value on inactivity
  */
 
 #define GUI_FREQ_MIN_VALUE 1
@@ -37,6 +35,8 @@
 #define GUI_DISP_WAVEFORM_Y 13
 #define GUI_DISP_OUTPUT_X 2
 #define GUI_DISP_OUTPUT_Y 16
+
+#define GUI_SETTING_TIMEOUT_MS 5000
 
 typedef enum
 {
@@ -73,6 +73,7 @@ typedef struct
 	uint8_t selected_digit; // 0 - least significant
 	dds_mode_t waveform;
 	bool output_enabled;
+	uint32_t last_activity_tick;
 } gui_ctx_t;
 
 static gui_ctx_t ctx;
@@ -98,13 +99,13 @@ static void gui_load_custom_chars(void)
 	hd44780_clear();
 }
 
-static void gui_display_frequency(uint32_t frequency, bool show_zeros)
+static void gui_display_frequency(bool show_zeros)
 {
 	bool leading_zeros_end = false;
 
 	for (size_t i = 0; i < GUI_FREQ_DIGITS_NUM; ++i) {
 		const uint32_t divisor = powf(10.0f, GUI_FREQ_LAST_DIGIT_INDEX - i);
-		const uint8_t digit = (frequency / divisor) % 10;
+		const uint8_t digit = (ctx.frequency / divisor) % 10;
 
 		/* First non-zero digit found, stop omitting zeros */
 		if (digit != 0) {
@@ -123,11 +124,11 @@ static void gui_display_frequency(uint32_t frequency, bool show_zeros)
 	}
 }
 
-static void gui_display_amplitude(uint16_t amplitude)
+static void gui_display_amplitude(void)
 {
 	for (size_t i = 0; i < GUI_AMPL_DIGITS_NUM; ++i) {
 		const uint32_t divisor = powf(10.0f, GUI_AMPL_LAST_DIGIT_INDEX - i);
-		const uint8_t digit = (amplitude / divisor) % 10;
+		const uint8_t digit = (ctx.amplitude / divisor) % 10;
 
 		hd44780_write_char(digit + '0');
 
@@ -138,11 +139,11 @@ static void gui_display_amplitude(uint16_t amplitude)
 	}
 }
 
-static void gui_display_waveform(dds_mode_t waveform)
+static void gui_display_waveform(void)
 {
 	hd44780_gotoxy(GUI_DISP_WAVEFORM_X, GUI_DISP_WAVEFORM_Y);
 
-	switch (waveform) {
+	switch (ctx.waveform) {
 		case DDS_MODE_SINE:
 			hd44780_write_char(GUI_SINE_WAVE_CHAR_1);
 			hd44780_write_char(GUI_SINE_WAVE_CHAR_2);
@@ -161,10 +162,10 @@ static void gui_display_waveform(dds_mode_t waveform)
 	}
 }
 
-static void gui_display_output_state(bool enabled)
+static void gui_display_output_state(void)
 {
 	hd44780_gotoxy(GUI_DISP_OUTPUT_X, GUI_DISP_OUTPUT_Y);
-	hd44780_write_char(enabled ? GUI_OUTPUT_ON_CHAR : GUI_OUTPUT_OFF_CHAR);
+	hd44780_write_char(ctx.output_enabled ? GUI_OUTPUT_ON_CHAR : GUI_OUTPUT_OFF_CHAR);
 }
 
 static bool gui_increment_value(uint32_t *value, int16_t increment, uint8_t selected_digit, uint32_t limit_lo, uint32_t limit_hi)
@@ -194,16 +195,16 @@ static void gui_redraw_display(uint8_t cursor_x, uint8_t cursor_y, gui_redraw_mo
 	}
 	hd44780_show_cursor(set_mode_active);
 	hd44780_write_string("Freq:");
-	gui_display_frequency(ctx.frequency, set_mode_active);
+	gui_display_frequency(set_mode_active);
 	hd44780_write_string("Hz");
 
 	/* Draw lower row */
 	hd44780_gotoxy(2, 1);  // Go to the beginning of the lower row
 	hd44780_write_string("Ampl:");
-	gui_display_amplitude(ctx.amplitude);
+	gui_display_amplitude();
 	hd44780_write_string("Vp");
-	gui_display_waveform(ctx.waveform);
-	gui_display_output_state(ctx.output_enabled);
+	gui_display_waveform();
+	gui_display_output_state();
 
 	/* No need to explicitly position the cursor if it's not visible */
 	if (set_mode_active) {
@@ -233,13 +234,77 @@ static uint8_t gui_amplitude_digit_to_column(uint8_t digit_index)
 	return GUI_DISP_AMPL_END_Y - digit_index;
 }
 
-static void gui_dds_load_from_eeprom(void)
+static HAL_StatusTypeDef gui_load_settings(void)
 {
+	uint32_t value;
 
+	HAL_StatusTypeDef status = settings_read(&value, SETTINGS_FREQUENCY);
+	if (status != HAL_OK) {
+		return status;
+	}
+	ctx.frequency = value;
+
+	status = settings_read(&value, SETTINGS_AMPLITUDE);
+	if (status != HAL_OK) {
+		return status;
+	}
+	ctx.amplitude = value;
+
+	status = settings_read(&value, SETTINGS_WAVEFORM);
+	if (status != HAL_OK) {
+		return status;
+	}
+	ctx.waveform = value;
+
+	return HAL_OK;
+}
+
+static HAL_StatusTypeDef gui_store_settings(void)
+{
+	HAL_StatusTypeDef status = settings_write(ctx.frequency, SETTINGS_FREQUENCY);
+	if (status != HAL_OK) {
+		return status;
+	}
+
+	status = settings_write(ctx.amplitude, SETTINGS_AMPLITUDE);
+	if (status != HAL_OK) {
+		return status;
+	}
+
+	status = settings_write(ctx.waveform, SETTINGS_WAVEFORM);
+	if (status != HAL_OK) {
+		return status;
+	}
+
+	return HAL_OK;
+}
+
+static HAL_StatusTypeDef gui_handle_setting_timeout(void)
+{
+	if (ctx.state == GUI_SET_MODE_OFF) {
+		return HAL_OK;
+	}
+
+	if ((HAL_GetTick() - ctx.last_activity_tick) < GUI_SETTING_TIMEOUT_MS) {
+		return HAL_OK;
+	}
+
+	/* Disable setting mode and roll back all changes */
+	ctx.state = GUI_SET_MODE_OFF;
+	const HAL_StatusTypeDef status = gui_load_settings();
+	if (status != HAL_OK) {
+		return status;
+	}
+
+	gui_redraw_display(0, 0, GUI_REDRAW_FULL);
+
+	return HAL_OK;
 }
 
 static void gui_button_callback(encoder_button_action_t type)
 {
+	ctx.last_activity_tick = HAL_GetTick();
+
 	switch (ctx.state) {
 		case GUI_SET_MODE_OFF:
 			if (type == ENCODER_BUTTON_CLICK) {
@@ -291,8 +356,7 @@ static void gui_button_callback(encoder_button_action_t type)
 
 		case GUI_SET_WAVEFORM:
 			ctx.state = GUI_SET_MODE_OFF;
-			// TODO update config in EEPROM
-			// TODO
+			gui_store_settings(); // TODO something with return value
 			gui_redraw_display(0, 0, GUI_REDRAW_FULL);
 			break;
 
@@ -303,6 +367,8 @@ static void gui_button_callback(encoder_button_action_t type)
 
 static void gui_rotation_callback(encoder_direction_t direction, uint16_t count, int16_t increment)
 {
+	ctx.last_activity_tick = HAL_GetTick();
+
 	switch (ctx.state) {
 		case GUI_SET_MODE_OFF:
 			// Do nothing
@@ -336,21 +402,30 @@ static void gui_rotation_callback(encoder_direction_t direction, uint16_t count,
 	}
 }
 
-void gui_init(void)
+HAL_StatusTypeDef gui_init(void)
 {
-	memset(&ctx, 0, sizeof(ctx));
-
 	gui_load_custom_chars();
 
 	encoder_set_button_callback(gui_button_callback);
 	encoder_set_rotation_callback(gui_rotation_callback);
 
-	ctx.waveform = DDS_MODE_SINE;
+	/* Load initial settings */
+	const HAL_StatusTypeDef status = gui_load_settings();
+	if (status != HAL_OK) {
+		return status;
+	}
+	ctx.state = GUI_SET_MODE_OFF;
+	ctx.output_enabled = false;
+
+	// TODO apply the settings to DDS
 
 	gui_redraw_display(0, 0, GUI_REDRAW_FULL);
+
+	return HAL_OK;
 }
 
 void gui_task(void)
 {
 	encoder_task();
+	gui_handle_setting_timeout(); // TODO something with return value
 }

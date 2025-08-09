@@ -1,5 +1,7 @@
 #pragma once
 
-void gui_init(void);
+#include <stm32f1xx_hal.h>
+
+HAL_StatusTypeDef gui_init(void);
 
 void gui_task(void);
