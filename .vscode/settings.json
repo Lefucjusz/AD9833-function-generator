@@ -1,6 +1,12 @@
 {
     "files.associations": {
         "*.cpp": "cpp",
-        "ch32v00x.h": "c"
+        "ch32v00x.h": "c",
+        "array": "c",
+        "compare": "c",
+        "functional": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "utility": "c"
     }
 }

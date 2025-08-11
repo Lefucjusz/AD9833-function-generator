@@ -10,6 +10,7 @@
 #include <delay.h>
 
 #define HD44780_GPIO_PORT GPIO_LCD_PORT
+#define HD44780_US_PER_MS 1000
 
 typedef struct
 {
@@ -27,7 +28,7 @@ static const hd44780_gpio_map_t gpio_map[HD44780_PIN_NUM] =
 		{.gpio_pin = GPIO_LCD_E_PIN, .display_pin = HD44780_PIN_E}
 };
 
-static void set_pin_state(hd44780_pin_t pin, hd44780_pin_state_t state)
+static void hd44780_io_set_pin_state(hd44780_pin_t pin, hd44780_pin_state_t state)
 {
 	for (size_t i = 0; i < HD44780_PIN_NUM; ++i) {
 		if (gpio_map[i].display_pin == pin) {
@@ -37,21 +38,18 @@ static void set_pin_state(hd44780_pin_t pin, hd44780_pin_state_t state)
 	}
 }
 
-static void delay_us(uint16_t us)
+static void hd44780_io_delay_us(uint16_t us)
 {
-	if (us < 1000) {
-		delay_us(1);
-	}
-	else {
-		delay_ms(us / 1000); // TODO cleanup
-	}
+	const uint16_t ms = (us >= HD44780_US_PER_MS) ? (us / HD44780_US_PER_MS) : 1;
+
+	delay_ms(ms);
 }
 
 hd44780_io_t *hd44780_io_get(void)
 {
 	static hd44780_io_t io = {
-			.set_pin_state = set_pin_state,
-			.delay_us = delay_us
+			.set_pin_state = hd44780_io_set_pin_state,
+			.delay_us = hd44780_io_delay_us
 	};
 
 	return &io;

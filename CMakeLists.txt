@@ -41,7 +41,7 @@ set(SRC_FILES
     ${PROJ_PATH}/startup/startup_ch32v00x.S
     ${PROJ_PATH}/main.c
 
-    # ${PROJ_PATH}/encoder/encoder.c
+    ${PROJ_PATH}/encoder/encoder.c
     ${PROJ_PATH}/hd44780/hd44780_io.c
     ${PROJ_PATH}/hd44780/hd44780.c
 )

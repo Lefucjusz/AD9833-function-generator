@@ -18,9 +18,11 @@ void delay_init(void)
     /* Set SysTick to generate interrupt every 1ms */
     SysTick->CNT = 0; // Clear counter
     SysTick->CMP = (SystemCoreClock / SYSTICK_IRQ_FREQ_HZ) - 1;
-    SysTick->CTLR = SYSTICK_CTRL_STE_BIT | SYSTICK_CTRL_STIE_BIT | SYSTICK_CTRL_STCLK_BIT | SYSTICK_CTRL_STRE_BIT; // Start Systick, enable interrupt, clock = HCLK, enable auto-reload
+    SysTick->CTLR = SYSTICK_CTRL_STE_BIT | SYSTICK_CTRL_STIE_BIT |
+                    SYSTICK_CTRL_STCLK_BIT | SYSTICK_CTRL_STRE_BIT; // Start Systick, enable interrupt, clock = HCLK, enable auto-reload
 
     /* Enable SysTick IRQ in NVIC */
+    NVIC_SetPriority(SysTicK_IRQn, 0);
     NVIC_EnableIRQ(SysTicK_IRQn);
 }
 
