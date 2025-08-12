@@ -42,6 +42,7 @@ set(SRC_FILES
     ${PROJ_PATH}/main.c
 
     ${PROJ_PATH}/encoder/encoder.c
+    ${PROJ_PATH}/gui/gui.c
     ${PROJ_PATH}/hd44780/hd44780_io.c
     ${PROJ_PATH}/hd44780/hd44780.c
 )
@@ -54,8 +55,11 @@ set(INCLUDE_DIRS
     ${PROJ_PATH}/drivers/hal
     ${PROJ_PATH}/system
 
+    ${PROJ_PATH}/dds
     ${PROJ_PATH}/encoder
+    ${PROJ_PATH}/gui
     ${PROJ_PATH}/hd44780
+    ${PROJ_PATH}/utils
 )
 
 # Executable
@@ -77,7 +81,6 @@ set(CPU_OPTIONS
 target_compile_options(${EXECUTABLE}
     PRIVATE
         ${CPU_OPTIONS}
-        -msmall-data-limit=0
         -msave-restore
         -fmessage-length=0
         -fsigned-char

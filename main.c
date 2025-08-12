@@ -2,20 +2,9 @@
 #include <delay.h>
 #include <gpio.h>
 #include <encoder.h>
+#include <gui.h>
 #include <hd44780_io.h>
 #include <hd44780.h>
-
-static void cb(encoder_button_action_t type)
-{
-	hd44780_gotoxy(1, 1);
-	hd44780_write_string(type == ENCODER_BUTTON_CLICK ? "click" : "hold ");
-}
-
-static void cb2(encoder_direction_t direction, uint32_t count, int32_t increment)
-{
-	hd44780_gotoxy(2, 1);
-	hd44780_write_integer(count, 0);
-}
 
 int main(void)
 {
@@ -31,12 +20,16 @@ int main(void)
 	};
 	hd44780_init(&display_config);
 
-	encoder_init();
+	/* 
+	 * TODO: 
+	 * - add SPI driver
+	 * - add DDS driver
+	 * - add some non-volatile storage (DS1307/24C01)
+	 */
 
-	encoder_set_button_callback(cb);
-	encoder_set_rotation_callback(cb2);
+	gui_init();
 
 	while (1) {
-		encoder_task();
+		gui_task();
 	}
 }

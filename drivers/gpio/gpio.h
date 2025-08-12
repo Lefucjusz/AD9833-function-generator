@@ -12,12 +12,10 @@
 
 #define GPIO_ENC_PORT GPIOC
 #define GPIO_ENC_PORT_SOURCE GPIO_PortSourceGPIOC
-#define GPIO_ENC_BUTTON_PIN GPIO_Pin_1
-#define GPIO_ENC_PHA_PIN GPIO_Pin_2
-#define GPIO_ENC_PHA_PIN_SOURCE GPIO_PinSource2
+#define GPIO_ENC_BUTTON_PIN GPIO_Pin_2
+#define GPIO_ENC_PHA_PIN GPIO_Pin_4
+#define GPIO_ENC_PHA_PIN_SOURCE GPIO_PinSource4
 #define GPIO_ENC_PHB_PIN GPIO_Pin_3
 #define GPIO_ENC_PHB_PIN_SOURCE GPIO_PinSource3
 
-
 void gpio_init(void);
- 
