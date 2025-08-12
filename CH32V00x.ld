@@ -28,6 +28,7 @@ SECTIONS
       *(.text.*)
       *(.rodata)
       *(.rodata*)
+      KEEP(*(.rodata_keep))
       *(.gnu.linkonce.t.*)
       . = ALIGN(4);
     } >FLASH AT>FLASH 
@@ -152,8 +153,4 @@ SECTIONS
 	    . = . + __stack_size;
 	    PROVIDE( _eusrstack = .);
 	} >RAM 
-	
 }
-
-
-

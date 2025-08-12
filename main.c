@@ -10,6 +10,25 @@
 #include <settings.h>
 #include <gui.h>
 #include <error_handler.h>
+#include <utils.h>
+
+#define VERSION "v0.0.1"
+
+AT_RODATA_KEEP_SECTION(static const char version[]) = "AD9833 generator " VERSION " Build " __DATE__ " " __TIME__;
+
+static void show_welcome_screen(void)
+{
+	hd44780_write_string("AD9833 generator");
+	hd44780_gotoxy(2, 1);
+	hd44780_write_string("Lefucjusz, 2025");
+	delay_ms(750);
+
+	hd44780_clear();
+	hd44780_write_string("Software " VERSION);
+	delay_ms(750);
+
+	hd44780_clear();
+}
 
 static void enter_sleep_mode(void)
 {
@@ -35,6 +54,8 @@ int main(void)
 	spi_init();
 	hd44780_init(&display_config);
 	encoder_init();
+
+	show_welcome_screen();
 
 	int err = dds_init();
 	if (err) {

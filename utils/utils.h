@@ -10,7 +10,7 @@
 /* Use to place RODATA that should not get removed at linking stage (e.g. version string).
  * Keep in sync with linker script, KEEP(*(.rodata_keep)) should be present in .rodata
  * section for this to work.  */
-// #define AT_RODATA_KEEP_SECTION(x) x __attribute__((used, section(".rodata_keep")))
+#define AT_RODATA_KEEP_SECTION(x) x __attribute__((used, section(".rodata_keep")))
 
 /* Custom math functions to avoid linking full math library */
 inline static float utils_fmodf(float x, float y)
