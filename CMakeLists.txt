@@ -38,10 +38,12 @@ set(SRC_FILES
     ${PROJ_PATH}/drivers/hal/ch32v00x_usart.c
     ${PROJ_PATH}/drivers/hal/ch32v00x_wwdg.c
     ${PROJ_PATH}/drivers/i2c/i2c.c
+    ${PROJ_PATH}/drivers/spi/spi.c
     ${PROJ_PATH}/system/system_ch32v00x.c
     ${PROJ_PATH}/startup/startup_ch32v00x.S
     ${PROJ_PATH}/main.c
 
+    ${PROJ_PATH}/dds/dds.c
     ${PROJ_PATH}/encoder/encoder.c
     ${PROJ_PATH}/gui/gui.c
     ${PROJ_PATH}/hd44780/hd44780_io.c
@@ -57,6 +59,7 @@ set(INCLUDE_DIRS
     ${PROJ_PATH}/drivers/gpio
     ${PROJ_PATH}/drivers/hal
     ${PROJ_PATH}/drivers/i2c
+    ${PROJ_PATH}/drivers/spi
     ${PROJ_PATH}/system
 
     ${PROJ_PATH}/dds

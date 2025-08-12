@@ -1,6 +1,5 @@
 #include "gui.h"
 #include <delay.h>
-// #include <main.h>
 #include <hd44780.h>
 #include <encoder.h>
 #include <dds.h>
@@ -108,7 +107,7 @@ static void gui_display_frequency(bool show_zeros)
 	bool leading_zeros_end = false;
 
 	for (size_t i = 0; i < GUI_FREQ_DIGITS_NUM; ++i) {
-		const uint32_t divisor = utils_upow(10, GUI_FREQ_LAST_DIGIT_INDEX - i);
+		const uint32_t divisor = utils_powu(10, GUI_FREQ_LAST_DIGIT_INDEX - i);
 		const uint8_t digit = (ctx.frequency / divisor) % 10;
 
 		/* First non-zero digit found, stop omitting zeros */
@@ -131,7 +130,7 @@ static void gui_display_frequency(bool show_zeros)
 static void gui_display_amplitude(void)
 {
 	for (size_t i = 0; i < GUI_AMPL_DIGITS_NUM; ++i) {
-		const uint32_t divisor = utils_upow(10, GUI_AMPL_LAST_DIGIT_INDEX - i);
+		const uint32_t divisor = utils_powu(10, GUI_AMPL_LAST_DIGIT_INDEX - i);
 		const uint8_t digit = (ctx.amplitude / divisor) % 10;
 
 		hd44780_write_char(digit + '0');
@@ -174,7 +173,7 @@ static void gui_display_output_state(void)
 
 static bool gui_increment_value(uint32_t *value, int32_t increment, uint8_t selected_digit, uint32_t limit_lo, uint32_t limit_hi)
 {
-	const uint32_t multiplier = utils_upow(10, selected_digit);
+	const uint32_t multiplier = utils_powu(10, selected_digit);
 	const uint32_t new_value = *value + increment * multiplier;
 
 	if ((new_value < limit_lo) || (new_value > limit_hi)) {
@@ -283,30 +282,30 @@ static int gui_store_settings(void)
 	return 0;
 }
 
-// static HAL_StatusTypeDef gui_configure_dds(void)
-// {
-// 	HAL_StatusTypeDef status = dds_set_frequency(ctx.frequency, DDS_CH0);
-// 	if (status != HAL_OK) {
-// 		return status;
-// 	}
+static int gui_configure_dds(void)
+{
+	int err = dds_set_frequency(ctx.frequency, DDS_CH0);
+	if (err) {
+		return err;
+	}
 
-// 	status = dds_set_mode(ctx.waveform);
-// 	if (status != HAL_OK) {
-// 		return status;
-// 	}
+	err = dds_set_mode(ctx.waveform);
+	if (err) {
+		return err;
+	}
 
-// 	status = dds_set_amplitude((float)ctx.amplitude / GUI_AMPL_SCALE_FACTOR);
-// 	if (status != HAL_OK) {
-// 		return status;
-// 	}
+	err = dds_set_amplitude((float)ctx.amplitude / GUI_AMPL_SCALE_FACTOR);
+	if (err) {
+		return err;
+	}
 
-// 	status = dds_set_output_enable(ctx.output_enabled);
-// 	if (status != HAL_OK) {
-// 		return status;
-// 	}
+	err = dds_set_output_enable(ctx.output_enabled);
+	if (err) {
+		return err;
+	}
 
-// 	return HAL_OK;
-// }
+	return 0;
+}
 
 static int gui_handle_setting_timeout(void)
 {
@@ -332,7 +331,7 @@ static int gui_handle_setting_timeout(void)
 
 static void gui_button_callback(encoder_button_action_t type)
 {
-	int err; // TODO handle errors
+	int err;
 
 	ctx.last_activity_tick = delay_get_ticks();
 
@@ -340,10 +339,10 @@ static void gui_button_callback(encoder_button_action_t type)
 		case GUI_SET_MODE_OFF:
 			if (type == ENCODER_BUTTON_CLICK) {
 				ctx.output_enabled = !ctx.output_enabled;
-				// status = dds_set_output_enable(ctx.output_enabled);
-				// if (status != HAL_OK) {
-				// 	Error_Handler_Message("DDS enable fail");
-				// }
+				err = dds_set_output_enable(ctx.output_enabled);
+				if (err) {
+					// Error_Handler_Message("DDS enable fail"); // TODO handle errors
+				}
 				gui_redraw_display(0, 0, GUI_REDRAW_PARTIAL);
 			}
 			else {
@@ -401,10 +400,10 @@ static void gui_button_callback(encoder_button_action_t type)
 			if (err) {
 				// Error_Handler_Message("NVS store fail"); // TODO
 			}
-			// status = gui_configure_dds();
-			// if (status != HAL_OK) {
-			// 	Error_Handler_Message("DDS config fail");
-			// }
+			err = gui_configure_dds();
+			if (err) {
+				// Error_Handler_Message("DDS config fail");
+			}
 			gui_redraw_display(0, 0, GUI_REDRAW_FULL);
 			break;
 
@@ -466,10 +465,10 @@ int gui_init(void)
 	ctx.state = GUI_SET_MODE_OFF;
 	ctx.output_enabled = false;
 
-	// status = gui_configure_dds();
-	// if (status != HAL_OK) {
-	// 	return status;
-	// }
+	err = gui_configure_dds();
+	if (err) {
+		return err;
+	}
 
 	gui_redraw_display(0, 0, GUI_REDRAW_FULL);
 

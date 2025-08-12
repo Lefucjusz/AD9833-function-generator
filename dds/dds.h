@@ -47,25 +47,25 @@ typedef enum
 	DDS_CHANNEL_COUNT
 } dds_channel_t;
 
-// HAL_StatusTypeDef dds_init(void);
+int dds_init(void);
 
-// HAL_StatusTypeDef dds_set_mode(dds_mode_t mode);
-// dds_mode_t dds_get_mode(void);
+int dds_set_mode(dds_mode_t mode);
+dds_mode_t dds_get_mode(void);
 
-// HAL_StatusTypeDef dds_set_frequency_channel(dds_channel_t channel);
-// dds_channel_t dds_get_frequency_channel(void);
+int dds_set_frequency_channel(dds_channel_t channel);
+dds_channel_t dds_get_frequency_channel(void);
 
-// HAL_StatusTypeDef dds_set_frequency(float frequency, dds_channel_t channel);
-// float dds_get_frequency(dds_channel_t channel);
+int dds_set_frequency(float frequency, dds_channel_t channel);
+float dds_get_frequency(dds_channel_t channel);
 
-// HAL_StatusTypeDef dds_set_phase_channel(dds_channel_t channel);
-// dds_channel_t dds_get_phase_channel(void);
+int dds_set_phase_channel(dds_channel_t channel);
+dds_channel_t dds_get_phase_channel(void);
 
-// HAL_StatusTypeDef dds_set_phase(float phase, dds_channel_t channel);
-// float dds_get_phase(dds_channel_t channel);
+int dds_set_phase(float phase, dds_channel_t channel);
+float dds_get_phase(dds_channel_t channel);
 
-// HAL_StatusTypeDef dds_set_amplitude(float amplitude);
-// float dds_get_amplitude(void);
+int dds_set_amplitude(float amplitude);
+float dds_get_amplitude(void);
 
-// HAL_StatusTypeDef dds_set_output_enable(bool enable);
-// bool dds_get_output_enable(void);
+int dds_set_output_enable(bool enable);
+bool dds_get_output_enable(void);

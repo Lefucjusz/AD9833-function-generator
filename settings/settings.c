@@ -10,8 +10,6 @@
  * 1,000,000 write cycles per cell, this approach is sufficient for this use case. */
 
 #define SETTINGS_EEPROM_WRITE_TIME_MS 5
-#define SETTINGS_EEPROM_I2C_ADDR (0x50 << 1)
-#define SETTINGS_I2C_SPEED_HZ 100000
 
 #define SETTINGS_CHECKSUM_INDEX 0
 #define SETTINGS_DATA_START_INDEX 1
@@ -93,8 +91,6 @@ static int settings_load_defaults(void)
 
 int settings_init(void)
 {
-	i2c_init(SETTINGS_I2C_SPEED_HZ, SETTINGS_EEPROM_I2C_ADDR, I2C_REG_SIZE_8BIT);
-
     /* Check if EEPROM already populated, if not, populate with defaults */
     if (!settings_check_integrity()) {
         const int err = settings_load_defaults();

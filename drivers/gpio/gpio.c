@@ -33,6 +33,20 @@ void gpio_init(void)
     gpio_cfg.GPIO_Speed = GPIO_Speed_10MHz;
     GPIO_Init(GPIO_I2C_PORT, &gpio_cfg);
 
+    /* Configure SPI GPIO */
+    gpio_cfg.GPIO_Pin = GPIO_SPI_MOSI_PIN | GPIO_SPI_SCK_PIN;
+    gpio_cfg.GPIO_Mode = GPIO_Mode_AF_PP;
+    gpio_cfg.GPIO_Speed = GPIO_Speed_10MHz;
+    GPIO_Init(GPIO_SPI_PORT, &gpio_cfg);
+
+    /* Configure chip selects */
+    gpio_cfg.GPIO_Pin = GPIO_SPI_DDS_CS_PIN | GPIO_SPI_PGA_CS_PIN;
+    gpio_cfg.GPIO_Mode = GPIO_Mode_Out_PP;
+    gpio_cfg.GPIO_Speed = GPIO_Speed_10MHz;
+    GPIO_Init(GPIO_SPI_PORT, &gpio_cfg);
+    GPIO_WriteBit(GPIO_SPI_PORT, GPIO_SPI_PGA_CS_PIN, Bit_SET);
+    GPIO_WriteBit(GPIO_SPI_PORT, GPIO_SPI_DDS_CS_PIN, Bit_SET);
+
     /* Configure EXTI for encoder rotation */
     GPIO_EXTILineConfig(GPIO_ENC_ROT_PORT_SOURCE, GPIO_ENC_PHA_PIN_SOURCE);
     GPIO_EXTILineConfig(GPIO_ENC_ROT_PORT_SOURCE, GPIO_ENC_PHB_PIN_SOURCE);

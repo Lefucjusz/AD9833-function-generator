@@ -11,7 +11,12 @@
 
 #define SYSTICK_IRQ_FREQ_HZ 1000
 
-static volatile uint32_t ticks;
+typedef struct
+{
+    volatile uint32_t ticks;
+} delay_ctx_t;
+
+static delay_ctx_t ctx;
 
 void delay_init(void)
 {
@@ -36,11 +41,11 @@ void delay_ms(uint32_t ms)
 
 uint32_t delay_get_ticks(void)
 {
-    return ticks;
+    return ctx.ticks;
 }
 
 void SysTick_Handler(void)
 {
-    ++ticks;
+    ++ctx.ticks;
     SysTick->SR = 0; // Clear comparison flag
 }

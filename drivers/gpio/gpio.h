@@ -24,4 +24,10 @@
 #define GPIO_I2C_SDA_PIN GPIO_Pin_1
 #define GPIO_I2C_SCL_PIN GPIO_Pin_2
 
+#define GPIO_SPI_PORT GPIOC
+#define GPIO_SPI_SCK_PIN GPIO_Pin_5
+#define GPIO_SPI_MOSI_PIN GPIO_Pin_6
+#define GPIO_SPI_DDS_CS_PIN GPIO_Pin_3
+#define GPIO_SPI_PGA_CS_PIN GPIO_Pin_0
+
 void gpio_init(void);

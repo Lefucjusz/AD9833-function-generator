@@ -6,7 +6,7 @@
 #include <errno.h>
 
 #define I2C_HANDLE I2C1
-#define I2C_TIMEOUT_MS 1000
+#define I2C_TIMEOUT_MS 100
 
 typedef struct
 {
