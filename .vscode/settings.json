@@ -12,6 +12,7 @@
         "string_view": "c",
         "error.h": "c",
         "utils.h": "c",
-        "math.h": "c"
+        "math.h": "c",
+        "eeprom.h": "c"
     }
 }

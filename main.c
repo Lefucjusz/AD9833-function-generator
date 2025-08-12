@@ -1,7 +1,6 @@
 #include <ch32v00x.h>
 #include <delay.h>
 #include <gpio.h>
-#include <i2c.h>
 #include <spi.h>
 #include <hd44780_io.h>
 #include <hd44780.h>
@@ -50,7 +49,6 @@ int main(void)
 
 	delay_init();
 	gpio_init();
-	i2c_init(SETTINGS_I2C_SPEED_HZ, SETTINGS_EEPROM_I2C_ADDR, I2C_REG_SIZE_8BIT);
 	spi_init();
 	hd44780_init(&display_config);
 	encoder_init();
@@ -69,11 +67,6 @@ int main(void)
 	if (err) {
 		error_handler_message("GUI init fail");
 	}
-
-	/* 
-	 * TODO: 
-	 * - add watchdog
-	 */
 
 	while (1) {
 		gui_task();

@@ -20,6 +20,7 @@ set(LDSCRIPT_PATH ${PROJ_PATH}/CH32V00x.ld)
 set(SRC_FILES
     ${PROJ_PATH}/drivers/core/core_riscv.c
     ${PROJ_PATH}/drivers/delay/delay.c
+    ${PROJ_PATH}/drivers/eeprom/eeprom.c
     ${PROJ_PATH}/drivers/gpio/gpio.c
     ${PROJ_PATH}/drivers/hal/ch32v00x_adc.c
     ${PROJ_PATH}/drivers/hal/ch32v00x_dbgmcu.c
@@ -37,13 +38,13 @@ set(SRC_FILES
     ${PROJ_PATH}/drivers/hal/ch32v00x_tim.c
     ${PROJ_PATH}/drivers/hal/ch32v00x_usart.c
     ${PROJ_PATH}/drivers/hal/ch32v00x_wwdg.c
-    ${PROJ_PATH}/drivers/i2c/i2c.c
     ${PROJ_PATH}/drivers/spi/spi.c
     ${PROJ_PATH}/system/system_ch32v00x.c
     ${PROJ_PATH}/startup/startup_ch32v00x.S
     ${PROJ_PATH}/main.c
 
     ${PROJ_PATH}/dds/dds.c
+    
     ${PROJ_PATH}/encoder/encoder.c
     ${PROJ_PATH}/error_handler/error_handler.c
     ${PROJ_PATH}/gui/gui.c
@@ -57,9 +58,9 @@ set(SRC_FILES
 set(INCLUDE_DIRS
     ${PROJ_PATH}/drivers/core
     ${PROJ_PATH}/drivers/delay
+    ${PROJ_PATH}/drivers/eeprom
     ${PROJ_PATH}/drivers/gpio
     ${PROJ_PATH}/drivers/hal
-    ${PROJ_PATH}/drivers/i2c
     ${PROJ_PATH}/drivers/spi
     ${PROJ_PATH}/system
 

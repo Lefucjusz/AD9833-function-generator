@@ -40,7 +40,7 @@ void spi_init(void)
     spi_cfg.SPI_CPOL = SPI_CPOL_Low;
     spi_cfg.SPI_CPHA = SPI_CPHA_1Edge;
     spi_cfg.SPI_NSS = SPI_NSS_Soft;
-    spi_cfg.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_4;
+    spi_cfg.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_2;
     spi_cfg.SPI_FirstBit = SPI_FirstBit_MSB;
     spi_cfg.SPI_CRCPolynomial = 7;
     SPI_Init(SPI_HANDLE, &spi_cfg);
