@@ -11,7 +11,7 @@ void gpio_init(void)
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOD | RCC_APB2Periph_AFIO, ENABLE);
 
     /* Configure LCD GPIO */
-    gpio_cfg.GPIO_Pin = GPIO_LCD_RS_PIN | GPIO_LCD_E_PIN | GPIO_LCD_D4_PIN | 
+    gpio_cfg.GPIO_Pin = GPIO_LCD_RS_PIN | GPIO_LCD_E_PIN | GPIO_LCD_D4_PIN |
                         GPIO_LCD_D5_PIN | GPIO_LCD_D6_PIN | GPIO_LCD_D7_PIN;
     gpio_cfg.GPIO_Mode = GPIO_Mode_Out_PP;
     gpio_cfg.GPIO_Speed = GPIO_Speed_10MHz;

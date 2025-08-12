@@ -1,10 +1,10 @@
 /**
   ******************************************************************************
-  * @file    EEPROM_Emulation/inc/eeprom.h 
+  * @file    EEPROM_Emulation/inc/eeprom.h
   * @author  MCD Application Team
   * @version V1.5.0
   * @date    14-April-2017
-  * @brief   This file contains all the functions prototypes for the EEPROM 
+  * @brief   This file contains all the functions prototypes for the EEPROM
   *          emulation firmware library.
   ******************************************************************************
   * @attention
@@ -34,7 +34,7 @@
   * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   *
   ******************************************************************************
-  */ 
+  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __EEPROM_H
@@ -46,7 +46,7 @@
 /* Exported constants --------------------------------------------------------*/
 /* Base address of the Flash sectors.
  *
- * NOTE: 
+ * NOTE:
  * If you need more storage, it is also possible to use 1KB Flash pages, it will require
  * changing all FLASH_ErasePage_Fast() calls to FLASH_ErasePage() and tweaking page
  * addresses and page size here. ~Lefucjusz */

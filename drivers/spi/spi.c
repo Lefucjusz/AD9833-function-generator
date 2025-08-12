@@ -1,26 +1,19 @@
 #include "spi.h"
 #include <ch32v00x.h>
-#include <timer.h>
+#include <delay.h>
 #include <errno.h>
 
 #define SPI_TIMEOUT_MS 100
 
-typedef struct
-{
-    timer_t timer;
-} spi_ctx_t;
-
-static spi_ctx_t ctx;
-
 static int spi_wait_for_flag(uint32_t flag, FlagStatus status)
 {
-    timer_reset(&ctx.timer);
+    const uint32_t start_tick = delay_get_ticks();
 
     while (1) {
         if (SPI_I2S_GetFlagStatus(SPI_HANDLE, flag) == status) {
             return 0;
         }
-        if (timer_has_elapsed(&ctx.timer)) {
+        if ((delay_get_ticks() - start_tick) >= SPI_TIMEOUT_MS) {
             return -ETIMEDOUT;
         }
     }
@@ -46,8 +39,6 @@ void spi_init(void)
     SPI_Init(SPI_HANDLE, &spi_cfg);
 
     SPI_Cmd(SPI_HANDLE, ENABLE);
-
-    timer_init(&ctx.timer, SPI_TIMEOUT_MS);
 }
 
 int spi_write(const void *data, size_t size)

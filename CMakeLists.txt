@@ -44,14 +44,13 @@ set(SRC_FILES
     ${PROJ_PATH}/main.c
 
     ${PROJ_PATH}/dds/dds.c
-    
+
     ${PROJ_PATH}/encoder/encoder.c
     ${PROJ_PATH}/error_handler/error_handler.c
     ${PROJ_PATH}/gui/gui.c
     ${PROJ_PATH}/hd44780/hd44780_io.c
     ${PROJ_PATH}/hd44780/hd44780.c
     ${PROJ_PATH}/settings/settings.c
-    ${PROJ_PATH}/timer/timer.c
 )
 
 # Include directories
@@ -70,7 +69,6 @@ set(INCLUDE_DIRS
     ${PROJ_PATH}/gui
     ${PROJ_PATH}/hd44780
     ${PROJ_PATH}/settings
-    ${PROJ_PATH}/timer
     ${PROJ_PATH}/utils
 )
 
