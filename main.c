@@ -1,8 +1,8 @@
 #include <ch32v00x.h>
 #include <delay.h>
 #include <gpio.h>
-#include <encoder.h>
 #include <gui.h>
+#include <settings.h>
 #include <hd44780_io.h>
 #include <hd44780.h>
 
@@ -20,11 +20,14 @@ int main(void)
 	};
 	hd44780_init(&display_config);
 
+	settings_init();
+
 	/* 
 	 * TODO: 
 	 * - add SPI driver
 	 * - add DDS driver
-	 * - add some non-volatile storage (DS1307/24C01)
+	 * - add watchdog
+	 * - add low power mode or remove functions needed for it
 	 */
 
 	gui_init();

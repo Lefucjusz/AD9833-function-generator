@@ -4,7 +4,7 @@
 #include <hd44780.h>
 #include <encoder.h>
 #include <dds.h>
-// #include <settings.h>
+#include <settings.h>
 #include <utils.h>
 #include <math.h>
 
@@ -238,50 +238,50 @@ static uint8_t gui_amplitude_digit_to_column(uint8_t digit_index)
 	return GUI_DISP_AMPL_END_Y - digit_index;
 }
 
-// static HAL_StatusTypeDef gui_load_settings(void)
-// {
-// 	uint32_t value;
+static int gui_load_settings(void)
+{
+	uint32_t value;
 
-// 	HAL_StatusTypeDef status = settings_read(&value, SETTINGS_FREQUENCY);
-// 	if (status != HAL_OK) {
-// 		return status;
-// 	}
-// 	ctx.frequency = value;
+	int err = settings_read(&value, SETTINGS_FREQUENCY);
+	if (err) {
+		return err;
+	}
+	ctx.frequency = value;
 
-// 	status = settings_read(&value, SETTINGS_AMPLITUDE);
-// 	if (status != HAL_OK) {
-// 		return status;
-// 	}
-// 	ctx.amplitude = value;
+	err = settings_read(&value, SETTINGS_AMPLITUDE);
+	if (err) {
+		return err;
+	}
+	ctx.amplitude = value;
 
-// 	status = settings_read(&value, SETTINGS_WAVEFORM);
-// 	if (status != HAL_OK) {
-// 		return status;
-// 	}
-// 	ctx.waveform = value;
+	err = settings_read(&value, SETTINGS_WAVEFORM);
+	if (err) {
+		return err;
+	}
+	ctx.waveform = value;
 
-// 	return HAL_OK;
-// }
+	return 0;
+}
 
-// static HAL_StatusTypeDef gui_store_settings(void)
-// {
-// 	HAL_StatusTypeDef status = settings_write(ctx.frequency, SETTINGS_FREQUENCY);
-// 	if (status != HAL_OK) {
-// 		return status;
-// 	}
+static int gui_store_settings(void)
+{
+	int err = settings_write(ctx.frequency, SETTINGS_FREQUENCY);
+	if (err) {
+		return err;
+	}
 
-// 	status = settings_write(ctx.amplitude, SETTINGS_AMPLITUDE);
-// 	if (status != HAL_OK) {
-// 		return status;
-// 	}
+	err = settings_write(ctx.amplitude, SETTINGS_AMPLITUDE);
+	if (err) {
+		return err;
+	}
 
-// 	status = settings_write(ctx.waveform, SETTINGS_WAVEFORM);
-// 	if (status != HAL_OK) {
-// 		return status;
-// 	}
+	err = settings_write(ctx.waveform, SETTINGS_WAVEFORM);
+	if (err) {
+		return err;
+	}
 
-// 	return HAL_OK;
-// }
+	return 0;
+}
 
 // static HAL_StatusTypeDef gui_configure_dds(void)
 // {
@@ -320,10 +320,10 @@ static int gui_handle_setting_timeout(void)
 
 	/* Disable setting mode and roll back all changes */
 	ctx.state = GUI_SET_MODE_OFF;
-	// const HAL_StatusTypeDef status = gui_load_settings();
-	// if (status != HAL_OK) {
-	// 	return status;
-	// }
+	const int err = gui_load_settings();
+	if (err) {
+		return err;
+	}
 
 	gui_redraw_display(0, 0, GUI_REDRAW_FULL);
 
@@ -332,7 +332,7 @@ static int gui_handle_setting_timeout(void)
 
 static void gui_button_callback(encoder_button_action_t type)
 {
-	// HAL_StatusTypeDef status;
+	int err; // TODO handle errors
 
 	ctx.last_activity_tick = delay_get_ticks();
 
@@ -397,10 +397,10 @@ static void gui_button_callback(encoder_button_action_t type)
 				ctx.amplitude = GUI_AMPL_MAX_VALUE;
 			}
 
-			// status = gui_store_settings();
-			// if (status != HAL_OK) {
-			// 	Error_Handler_Message("NVS store fail");
-			// }
+			err = gui_store_settings();
+			if (err) {
+				// Error_Handler_Message("NVS store fail"); // TODO
+			}
 			// status = gui_configure_dds();
 			// if (status != HAL_OK) {
 			// 	Error_Handler_Message("DDS config fail");
@@ -459,10 +459,10 @@ int gui_init(void)
 	encoder_set_rotation_callback(gui_rotation_callback);
 
 	/* Load initial settings */
-	// HAL_StatusTypeDef status = gui_load_settings();
-	// if (status != HAL_OK) {
-	// 	return status;
-	// }
+	int err = gui_load_settings();
+	if (err) {
+		return err;
+	}
 	ctx.state = GUI_SET_MODE_OFF;
 	ctx.output_enabled = false;
 
@@ -487,8 +487,8 @@ void gui_task(void)
 
 	gui_handle_setting_timeout();
 
-	// const HAL_StatusTypeDef status = gui_handle_setting_timeout();
-	// if (status != HAL_OK) {
-	// 	Error_Handler_Message("NVS read fail");
-	// }
+	const int err = gui_handle_setting_timeout();
+	if (err) {
+		// Error_Handler_Message("NVS read fail"); // TODO
+	}
 }

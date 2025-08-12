@@ -37,6 +37,7 @@ set(SRC_FILES
     ${PROJ_PATH}/drivers/hal/ch32v00x_tim.c
     ${PROJ_PATH}/drivers/hal/ch32v00x_usart.c
     ${PROJ_PATH}/drivers/hal/ch32v00x_wwdg.c
+    ${PROJ_PATH}/drivers/i2c/i2c.c
     ${PROJ_PATH}/system/system_ch32v00x.c
     ${PROJ_PATH}/startup/startup_ch32v00x.S
     ${PROJ_PATH}/main.c
@@ -45,6 +46,8 @@ set(SRC_FILES
     ${PROJ_PATH}/gui/gui.c
     ${PROJ_PATH}/hd44780/hd44780_io.c
     ${PROJ_PATH}/hd44780/hd44780.c
+    ${PROJ_PATH}/settings/settings.c
+    ${PROJ_PATH}/timer/timer.c
 )
 
 # Include directories
@@ -53,12 +56,15 @@ set(INCLUDE_DIRS
     ${PROJ_PATH}/drivers/delay
     ${PROJ_PATH}/drivers/gpio
     ${PROJ_PATH}/drivers/hal
+    ${PROJ_PATH}/drivers/i2c
     ${PROJ_PATH}/system
 
     ${PROJ_PATH}/dds
     ${PROJ_PATH}/encoder
     ${PROJ_PATH}/gui
     ${PROJ_PATH}/hd44780
+    ${PROJ_PATH}/settings
+    ${PROJ_PATH}/timer
     ${PROJ_PATH}/utils
 )
 

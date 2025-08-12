@@ -33,13 +33,13 @@ static encoder_ctx_t ctx;
 
 static bool encoder_is_button_pressed(void)
 {
-	return (GPIO_ReadInputDataBit(GPIO_ENC_PORT, GPIO_ENC_BUTTON_PIN) == Bit_RESET);
+	return (GPIO_ReadInputDataBit(GPIO_ENC_BUTTON_PORT, GPIO_ENC_BUTTON_PIN) == Bit_RESET);
 }
 
 static void encoder_rotation_isr(uint32_t irq_pin)
 {
-	const uint8_t pha_state = GPIO_ReadInputDataBit(GPIO_ENC_PORT, GPIO_ENC_PHA_PIN);
-	const uint8_t phb_state = GPIO_ReadInputDataBit(GPIO_ENC_PORT, GPIO_ENC_PHB_PIN);
+	const uint8_t pha_state = GPIO_ReadInputDataBit(GPIO_ENC_ROT_PORT, GPIO_ENC_PHA_PIN);
+	const uint8_t phb_state = GPIO_ReadInputDataBit(GPIO_ENC_ROT_PORT, GPIO_ENC_PHB_PIN);
 	const uint8_t gpio_state = (phb_state << 1) | (pha_state << 0);
 
 	if (irq_pin == GPIO_ENC_PHA_PIN) {
