@@ -4,6 +4,7 @@
 #include <encoder.h>
 #include <dds.h>
 #include <settings.h>
+#include <error_handler.h>
 #include <utils.h>
 #include <math.h>
 
@@ -341,7 +342,7 @@ static void gui_button_callback(encoder_button_action_t type)
 				ctx.output_enabled = !ctx.output_enabled;
 				err = dds_set_output_enable(ctx.output_enabled);
 				if (err) {
-					// Error_Handler_Message("DDS enable fail"); // TODO handle errors
+					error_handler_message("DDS enable fail");
 				}
 				gui_redraw_display(0, 0, GUI_REDRAW_PARTIAL);
 			}
@@ -398,11 +399,11 @@ static void gui_button_callback(encoder_button_action_t type)
 
 			err = gui_store_settings();
 			if (err) {
-				// Error_Handler_Message("NVS store fail"); // TODO
+				error_handler_message("NVS store fail");
 			}
 			err = gui_configure_dds();
 			if (err) {
-				// Error_Handler_Message("DDS config fail");
+				error_handler_message("DDS config fail");
 			}
 			gui_redraw_display(0, 0, GUI_REDRAW_FULL);
 			break;
@@ -484,10 +485,8 @@ void gui_task(void)
 {
 	encoder_task();
 
-	gui_handle_setting_timeout();
-
 	const int err = gui_handle_setting_timeout();
 	if (err) {
-		// Error_Handler_Message("NVS read fail"); // TODO
+		error_handler_message("NVS read fail");
 	}
 }

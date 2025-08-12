@@ -18,7 +18,7 @@ typedef enum
 typedef void (*encoder_rotation_callback_t)(encoder_direction_t direction, uint32_t count, int32_t increment);
 typedef void (*encoder_button_callback_t)(encoder_button_action_t type);
 
-int encoder_init(void);
+void encoder_init(void);
 
 void encoder_set_rotation_callback(encoder_rotation_callback_t callback);
 void encoder_set_button_callback(encoder_button_callback_t callback);

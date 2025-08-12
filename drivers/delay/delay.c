@@ -44,6 +44,16 @@ uint32_t delay_get_ticks(void)
     return ctx.ticks;
 }
 
+void delay_suspend_tick(void)
+{
+    SysTick->CTLR &= ~SYSTICK_CTRL_STE_BIT;
+}
+
+void delay_resume_tick(void)
+{
+    SysTick->CTLR |= SYSTICK_CTRL_STE_BIT;
+}
+
 void SysTick_Handler(void)
 {
     ++ctx.ticks;

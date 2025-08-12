@@ -45,6 +45,7 @@ set(SRC_FILES
 
     ${PROJ_PATH}/dds/dds.c
     ${PROJ_PATH}/encoder/encoder.c
+    ${PROJ_PATH}/error_handler/error_handler.c
     ${PROJ_PATH}/gui/gui.c
     ${PROJ_PATH}/hd44780/hd44780_io.c
     ${PROJ_PATH}/hd44780/hd44780.c
@@ -64,6 +65,7 @@ set(INCLUDE_DIRS
 
     ${PROJ_PATH}/dds
     ${PROJ_PATH}/encoder
+    ${PROJ_PATH}/error_handler
     ${PROJ_PATH}/gui
     ${PROJ_PATH}/hd44780
     ${PROJ_PATH}/settings

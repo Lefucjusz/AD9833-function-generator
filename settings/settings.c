@@ -7,7 +7,10 @@
 
 /* NOTE: This is a simple EEPROM settings storage implementation without wear-leveling.
  * Given that setting changes are infrequent and the 24C16 EEPROM supports approximately
- * 1,000,000 write cycles per cell, this approach is sufficient for this use case. */
+ * 1,000,000 write cycles per cell, this approach is sufficient for this use case.
+ *
+ * This can probably implemented using internal Flash memory, similarly to the solution 
+ * used in STM32s, but this way it was much quicker. Maybe I'll rewrite it one day. */
 
 #define SETTINGS_EEPROM_WRITE_TIME_MS 5
 
